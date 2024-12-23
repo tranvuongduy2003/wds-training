@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  # services
+  mongo:
+    image: mongo
+    container_name: mongo
+    environment:
+      MONGO_INITDB_DATABASE: "${MONGO_INITDB_DATABASE}"
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
+    restart: always
+    volumes:
+      - wds_mongo_data:/data/db
+      - wds_mongo_config:/data/configdb
+    ports:
+      - "27017:27017"
+
+# network section
+networks:
+  default:
+    name: my-network
+    driver: bridge
+
+# volumes section
+volumes:
+  wds_mongo_data:
+    name: wds_mongo_data
+  wds_mongo_config:
+    name: wds_mongo_config
