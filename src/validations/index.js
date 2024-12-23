@@ -1,1 +1,1 @@
-export const userValidation = require('./user.validation').default;
+module.exports.userValidation = require('./user.validation');

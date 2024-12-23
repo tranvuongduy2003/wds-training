@@ -1,41 +1,51 @@
-import { object, string, number, required } from 'joi';
-import { password, objectId } from './custom.validation';
+const Joi = require('joi');
+const { password, objectId } = require('./custom.validation');
 
 const createUser = {
-  body: object().keys({
-    email: string().required().email(),
-    password: string().required().custom(password),
-    name: string().required(),
-    role: string().required().valid('user', 'admin'),
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().custom(password),
+    name: Joi.string().required(),
+    role: Joi.string().required().valid('user', 'admin'),
+  }),
+};
+
+const getUsers = {
+  query: Joi.object().keys({
+    name: Joi.string(),
+    role: Joi.string(),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
   }),
 };
 
 const getUser = {
-  params: object().keys({
-    userId: string().custom(objectId),
+  params: Joi.object().keys({
+    userId: Joi.string().custom(objectId),
   }),
 };
 
 const updateUser = {
-  params: object().keys({
-    userId: required().custom(objectId),
+  params: Joi.object().keys({
+    userId: Joi.required().custom(objectId),
   }),
-  body: object()
+  body: Joi.object()
     .keys({
-      email: string().email(),
-      password: string().custom(password),
-      name: string(),
+      email: Joi.string().email(),
+      password: Joi.string().custom(password),
+      name: Joi.string(),
     })
     .min(1),
 };
 
 const deleteUser = {
-  params: object().keys({
-    userId: string().custom(objectId),
+  params: Joi.object().keys({
+    userId: Joi.string().custom(objectId),
   }),
 };
 
-export default {
+module.exports = {
   createUser,
   getUsers,
   getUser,

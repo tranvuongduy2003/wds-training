@@ -1,39 +1,14 @@
-import { Router } from 'express';
-import userController from '../../controllers/user.controller';
-import validate from '../../middlewares/validate';
-import { createUser, deleteUser, getUser, getUsers, updateUser } from '../../validations/user.validation';
+const express = require('express');
+const userController = require('../../controllers/user.controller');
 
-const router = Router();
-
-router
-  .route('/')
-  .post('', validate(createUser), userController.createUser)
-  .get('', validate(getUsers), userController.getUsers);
-
-router
-  .route('/:userId')
-  .get("", validate(getUser), userController.getUser)
-  .patch("", validate(updateUser), userController.updateUser)
-  .delete("", validate(deleteUser), userController.deleteUser);
-
-export default router;
-
-/**
- * @swagger
- * tags:
- *   name: Users
- *   description: User management and retrieval
- */
+const router = express.Router();
 
 /**
  * @swagger
  * /users:
  *   post:
- *     summary: Create a user
- *     description: Only admins can create other users.
+ *     summary: Create new user
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -44,152 +19,78 @@ export default router;
  *               - name
  *               - email
  *               - password
- *               - role
  *             properties:
  *               name:
  *                 type: string
+ *                 description: User's full name
  *               email:
  *                 type: string
  *                 format: email
- *                 description: must be unique
+ *                 description: User's email address
  *               password:
  *                 type: string
  *                 format: password
  *                 minLength: 8
- *                 description: At least one number and one letter
- *               role:
- *                  type: string
- *                  enum: [user, admin]
- *             example:
- *               name: fake name
- *               email: fake@example.com
- *               password: password1
- *               role: user
+ *                 description: Password (must contain letters and numbers)
  *     responses:
- *       "201":
- *         description: Created
- *         content:
- *           application/json:
- *             schema:
- *                $ref: '#/components/schemas/User'
- *       "400":
- *         $ref: '#/components/responses/DuplicateEmail'
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
- *
- *   get:
- *     summary: Get all users
- *     description: Only admins can retrieve all users.
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: User name
- *       - in: query
- *         name: role
- *         schema:
- *           type: string
- *         description: User role
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *         description: sort by query in the form of field:desc/asc (ex. name:asc)
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *         default: 10
- *         description: Maximum number of users
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *           default: 1
- *         description: Page number
- *     responses:
- *       "200":
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 results:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/User'
- *                 page:
- *                   type: integer
- *                   example: 1
- *                 limit:
- *                   type: integer
- *                   example: 10
- *                 totalPages:
- *                   type: integer
- *                   example: 1
- *                 totalResults:
- *                   type: integer
- *                   example: 1
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: Invalid request body
  */
+router.route('/').post(userController.createUser);
 
 /**
  * @swagger
- * /users/{id}:
+ * /users:
  *   get:
- *     summary: Get a user
- *     description: Logged in users can fetch only their own user information. Only admins can fetch other users.
+ *     summary: Get all users
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: User id
  *     responses:
- *       "200":
- *         description: OK
+ *       200:
+ *         description: List of users retrieved successfully
  *         content:
  *           application/json:
  *             schema:
- *                $ref: '#/components/schemas/User'
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
- *       "404":
- *         $ref: '#/components/responses/NotFound'
- *
- *   patch:
- *     summary: Update a user
- *     description: Logged in users can only update their own information. Only admins can update other users.
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ */
+router.route('/').get(userController.getUsers);
+
+/**
+ * @swagger
+ * /users/{userId}:
+ *   get:
+ *     summary: Get user by ID
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: userId
+ *         in: path
  *         required: true
  *         schema:
  *           type: string
- *         description: User id
+ *     responses:
+ *       200:
+ *         description: User retrieved successfully
+ *       404:
+ *         description: User not found
+ */
+router.route('/:userId').get(userController.getUser);
+
+/**
+ * @swagger
+ * /users/{userId}:
+ *   patch:
+ *     summary: Update user
+ *     tags: [Users]
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
  *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -200,52 +101,66 @@ export default router;
  *               email:
  *                 type: string
  *                 format: email
- *                 description: must be unique
  *               password:
  *                 type: string
- *                 format: password
  *                 minLength: 8
- *                 description: At least one number and one letter
- *             example:
- *               name: fake name
- *               email: fake@example.com
- *               password: password1
  *     responses:
- *       "200":
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *                $ref: '#/components/schemas/User'
- *       "400":
- *         $ref: '#/components/responses/DuplicateEmail'
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
- *       "404":
- *         $ref: '#/components/responses/NotFound'
- *
+ *       200:
+ *         description: User updated successfully
+ *       400:
+ *         description: Invalid request body
+ *       404:
+ *         description: User not found
+ */
+router.route('/:userId').patch(userController.updateUser);
+
+/**
+ * @swagger
+ * /users/{userId}:
  *   delete:
- *     summary: Delete a user
- *     description: Logged in users can delete only themselves. Only admins can delete other users.
+ *     summary: Delete user
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: userId
+ *         in: path
  *         required: true
  *         schema:
  *           type: string
- *         description: User id
  *     responses:
- *       "200":
- *         description: No content
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
- *       "404":
- *         $ref: '#/components/responses/NotFound'
+ *       204:
+ *         description: User deleted successfully
+ *       404:
+ *         description: User not found
  */
+router.route('/:userId').delete(userController.deleteUser);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: User's unique identifier
+ *         name:
+ *           type: string
+ *           description: User's full name
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: User's email address
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *       required:
+ *         - id
+ *         - name
+ *         - email
+ */
+
+module.exports = router;

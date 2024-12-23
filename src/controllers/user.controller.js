@@ -1,40 +1,41 @@
-import { CREATED, NOT_FOUND, NO_CONTENT } from 'http-status';
-import { userService } from '../services';
-import ApiError from '../utils/ApiError';
-import catchAsync from '../utils/catchAsync';
-import pick from '../utils/pick';
+const httpStatus = require('http-status');
+const ApiError = require('../utils/ApiError');
+const userService = require('../services/user.service');
 
-const createUser = catchAsync(async (req, res) => {
+const createUser = async (req, res) => {
   const user = await userService.createUser(req.body);
-  res.status(CREATED).send(user);
-});
+  res.status(httpStatus.CREATED).send(user);
+};
 
-const getUsers = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role']);
-  const options = pick(req.query, ['sortBy', 'limit', 'page']);
-  const result = await userService.queryUsers(filter, options);
+const getUsers = async (req, res) => {
+  // Tiền xử lý payload nhận request (Optinal)
+
+  // Gọi service
+  const result = await userService.queryUsers();
+
+  // Trả về response
   res.send(result);
-});
+};
 
-const getUser = catchAsync(async (req, res) => {
+const getUser = async (req, res) => {
   const user = await userService.getUserById(req.params.userId);
   if (!user) {
-    throw new ApiError(NOT_FOUND, 'User not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
   res.send(user);
-});
+};
 
-const updateUser = catchAsync(async (req, res) => {
+const updateUser = async (req, res) => {
   const user = await userService.updateUserById(req.params.userId, req.body);
   res.send(user);
-});
+};
 
-const deleteUser = catchAsync(async (req, res) => {
+const deleteUser = async (req, res) => {
   await userService.deleteUserById(req.params.userId);
-  res.status(NO_CONTENT).send();
-});
+  res.status(httpStatus.NO_CONTENT).send();
+};
 
-export default {
+module.exports = {
   createUser,
   getUsers,
   getUser,

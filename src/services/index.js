@@ -1,1 +1,1 @@
-module.exports.userService = require('./user.service').default;
+module.exports.userService = require('./user.service');

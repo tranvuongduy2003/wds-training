@@ -1,1 +1,1 @@
-export const userController = require('./user.controller').default;
+module.exports.userController = require('./user.controller');

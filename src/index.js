@@ -1,21 +1,20 @@
-import mongoose from 'mongoose';
-import { listen } from './app';
-import { mongoose as _mongoose, port } from './config/config';
-import { info, error as _error } from './config/logger';
+const mongoose = require('mongoose');
+const app = require('./app');
+const config = require('./config/config');
+const logger = require('./config/logger');
 
 let server;
-
-mongoose.connect(_mongoose.url, _mongoose.options).then(() => {
-  info('Connected to MongoDB');
-  server = listen(port, () => {
-    info(`Listening to port ${port}`);
+mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
+  logger.info('Connected to MongoDB');
+  server = app.listen(config.port, () => {
+    logger.info(`Listening to port ${config.port}`);
   });
 });
 
 const exitHandler = () => {
   if (server) {
     server.close(() => {
-      info('Server closed');
+      logger.info('Server closed');
       process.exit(1);
     });
   } else {
@@ -24,7 +23,7 @@ const exitHandler = () => {
 };
 
 const unexpectedErrorHandler = (error) => {
-  _error(error);
+  logger.error(error);
   exitHandler();
 };
 
@@ -32,7 +31,7 @@ process.on('uncaughtException', unexpectedErrorHandler);
 process.on('unhandledRejection', unexpectedErrorHandler);
 
 process.on('SIGTERM', () => {
-  info('SIGTERM received');
+  logger.info('SIGTERM received');
   if (server) {
     server.close();
   }
